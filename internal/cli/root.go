@@ -31,4 +31,12 @@ func init() {
 	rootCmd.PersistentFlags().DurationVar(&requestTimeout, "timeout", 30*time.Second, "HTTP client timeout")
 
 	rootCmd.AddCommand(authCmd)
+
+	defaultHelp := rootCmd.HelpFunc()
+	rootCmd.SetHelpFunc(func(c *cobra.Command, args []string) {
+		if c == rootCmd {
+			fprintLogo(c.OutOrStdout())
+		}
+		defaultHelp(c, args)
+	})
 }
