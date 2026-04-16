@@ -19,8 +19,14 @@ var balanceGetCheckingCmd = &cobra.Command{
 	RunE:  runBalanceGetChecking,
 }
 
+var balanceGetStocksCmd = &cobra.Command{
+	Use:   "stocks",
+	Short: "Get stocks portfolio positions",
+	RunE:  runBalanceGetStocks,
+}
+
 func init() {
-	balanceCmd.AddCommand(balanceGetCheckingCmd)
+	balanceCmd.AddCommand(balanceGetCheckingCmd, balanceGetStocksCmd)
 	rootCmd.AddCommand(balanceCmd)
 }
 
@@ -33,6 +39,23 @@ func runBalanceGetChecking(cmd *cobra.Command, args []string) error {
 	defer cancel()
 
 	out, err := c.Balance.GetChecking(ctx)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	enc := json.NewEncoder(cmd.OutOrStdout())
+	enc.SetIndent("", "  ")
+	return enc.Encode(out)
+}
+
+func runBalanceGetStocks(cmd *cobra.Command, args []string) error {
+	c, err := app.Client()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
+	defer cancel()
+
+	out, err := c.Balance.GetStocks(ctx)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
