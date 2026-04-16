@@ -3,12 +3,8 @@ package cli
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
-	"github.com/jeremyjsx/wallbit-cli/internal/balance"
-	"github.com/jeremyjsx/wallbit-cli/internal/client"
-	"github.com/jeremyjsx/wallbit-cli/internal/credentials"
 	"github.com/spf13/cobra"
 )
 
@@ -29,24 +25,16 @@ func init() {
 }
 
 func runBalanceGetChecking(cmd *cobra.Command, args []string) error {
-	key, _, err := credentials.Load(apiKey)
+	c, err := app.Client()
 	if err != nil {
 		return err
 	}
-	c, err := client.New(baseURL, key, requestTimeout)
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(cmd.Context(), requestTimeout)
+	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	out, err := balance.GetChecking(ctx, c)
+	out, err := c.Balance.GetChecking(ctx)
 	if err != nil {
-		var apiErr client.APIStatusError
-		if errors.As(err, &apiErr) && apiErr.Status == 401 {
-			return fmt.Errorf("%w: run wallbit auth login or set %s", err, credentials.EnvAPIKey)
-		}
-		return err
+		return fmt.Errorf("%w", err)
 	}
 	enc := json.NewEncoder(cmd.OutOrStdout())
 	enc.SetIndent("", "  ")
