@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jeremyjsx/wallbit-cli/internal/credentials"
+	apikeysvc "github.com/jeremyjsx/wallbit-cli/internal/services/apikey"
 	balancesvc "github.com/jeremyjsx/wallbit-cli/internal/services/balance"
 	transactionssvc "github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
 	wallbit "github.com/jeremyjsx/wallbit-go/client"
@@ -16,6 +17,7 @@ type App struct {
 	timeout    time.Duration
 
 	client          *wallbit.Client
+	apiKeySvc       *apikeysvc.Service
 	balanceSvc      *balancesvc.Service
 	transactionsSvc *transactionssvc.Service
 }
@@ -73,4 +75,12 @@ func (a *App) TransactionsService() *transactionssvc.Service {
 	}
 	a.transactionsSvc = transactionssvc.New(a.Client)
 	return a.transactionsSvc
+}
+
+func (a *App) APIKeyService() *apikeysvc.Service {
+	if a.apiKeySvc != nil {
+		return a.apiKeySvc
+	}
+	a.apiKeySvc = apikeysvc.New(a.Client)
+	return a.apiKeySvc
 }
