@@ -7,6 +7,7 @@ import (
 	"github.com/jeremyjsx/wallbit-cli/internal/credentials"
 	apikeysvc "github.com/jeremyjsx/wallbit-cli/internal/services/apikey"
 	balancesvc "github.com/jeremyjsx/wallbit-cli/internal/services/balance"
+	tradessvc "github.com/jeremyjsx/wallbit-cli/internal/services/trades"
 	transactionssvc "github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
 	wallbit "github.com/jeremyjsx/wallbit-go/client"
 )
@@ -19,6 +20,7 @@ type App struct {
 	client          *wallbit.Client
 	apiKeySvc       *apikeysvc.Service
 	balanceSvc      *balancesvc.Service
+	tradesSvc       *tradessvc.Service
 	transactionsSvc *transactionssvc.Service
 }
 
@@ -75,6 +77,14 @@ func (a *App) TransactionsService() *transactionssvc.Service {
 	}
 	a.transactionsSvc = transactionssvc.New(a.Client)
 	return a.transactionsSvc
+}
+
+func (a *App) TradesService() *tradessvc.Service {
+	if a.tradesSvc != nil {
+		return a.tradesSvc
+	}
+	a.tradesSvc = tradessvc.New(a.Client)
+	return a.tradesSvc
 }
 
 func (a *App) APIKeyService() *apikeysvc.Service {
