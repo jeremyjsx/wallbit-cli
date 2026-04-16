@@ -31,14 +31,10 @@ func init() {
 }
 
 func runBalanceGetChecking(cmd *cobra.Command, args []string) error {
-	c, err := app.Client()
-	if err != nil {
-		return err
-	}
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	out, err := c.Balance.GetChecking(ctx)
+	out, err := app.BalanceService().GetChecking(ctx)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -48,14 +44,10 @@ func runBalanceGetChecking(cmd *cobra.Command, args []string) error {
 }
 
 func runBalanceGetStocks(cmd *cobra.Command, args []string) error {
-	c, err := app.Client()
-	if err != nil {
-		return err
-	}
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	out, err := c.Balance.GetStocks(ctx)
+	out, err := app.BalanceService().GetStocks(ctx)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

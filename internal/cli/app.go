@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/jeremyjsx/wallbit-cli/internal/credentials"
+	balancesvc "github.com/jeremyjsx/wallbit-cli/internal/services/balance"
+	transactionssvc "github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
 	wallbit "github.com/jeremyjsx/wallbit-go/client"
 )
 
@@ -13,7 +15,9 @@ type App struct {
 	baseURL    string
 	timeout    time.Duration
 
-	client *wallbit.Client
+	client          *wallbit.Client
+	balanceSvc      *balancesvc.Service
+	transactionsSvc *transactionssvc.Service
 }
 
 func NewApp(apiKeyFlag, baseURL string, timeout time.Duration) *App {
@@ -53,4 +57,20 @@ func (a *App) Client() (*wallbit.Client, error) {
 
 	a.client = c
 	return a.client, nil
+}
+
+func (a *App) BalanceService() *balancesvc.Service {
+	if a.balanceSvc != nil {
+		return a.balanceSvc
+	}
+	a.balanceSvc = balancesvc.New(a.Client)
+	return a.balanceSvc
+}
+
+func (a *App) TransactionsService() *transactionssvc.Service {
+	if a.transactionsSvc != nil {
+		return a.transactionsSvc
+	}
+	a.transactionsSvc = transactionssvc.New(a.Client)
+	return a.transactionsSvc
 }
