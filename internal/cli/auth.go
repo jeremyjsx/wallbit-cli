@@ -40,7 +40,7 @@ func init() {
 func runAuthLogin(cmd *cobra.Command, args []string) error {
 	key := strings.TrimSpace(apiKey)
 	if key == "" {
-		fmt.Fprint(cmd.ErrOrStderr(), "Enter API key:")
+		fmt.Fprint(cmd.ErrOrStderr(), "Enter API key: ")
 		line, err := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
 		if err != nil {
 			return fmt.Errorf("read API key: %w", err)
