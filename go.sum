@@ -1,8 +1,8 @@
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/jeremyjsx/wallbit-go v0.0.0-20260416052811-b65cfaa83835 h1:A1Kvy0yjEVoKZ6+b2steGgigAbSArqgWBZRxxqPmrGQ=
-github.com/jeremyjsx/wallbit-go v0.0.0-20260416052811-b65cfaa83835/go.mod h1:deuvYsVbVf2w4CePwY7uoidX3czNDju4cF6VzglhTMY=
+github.com/jeremyjsx/wallbit-go v0.0.0-20260416061449-f7b8c7aff359 h1:EQeeljb1R1JurwFhFJ8Mu6undhgKn2yEClx4GwqevWg=
+github.com/jeremyjsx/wallbit-go v0.0.0-20260416061449-f7b8c7aff359/go.mod h1:deuvYsVbVf2w4CePwY7uoidX3czNDju4cF6VzglhTMY=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/spf13/cobra v1.10.2 h1:DMTTonx5m65Ic0GOoRY2c16WCbHxOOw6xxezuLaBpcU=
 github.com/spf13/cobra v1.10.2/go.mod h1:7C1pvHqHw5A4vrJfjNwvOdzYu0Gml16OCs2GRiTUUS4=
