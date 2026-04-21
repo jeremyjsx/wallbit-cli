@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/jeremyjsx/wallbit-cli/internal/services/accountdetails"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/apikey"
+	"github.com/jeremyjsx/wallbit-cli/internal/services/assets"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/balance"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/fees"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/rates"
@@ -17,6 +18,7 @@ import (
 type Services struct {
 	AccountDetails *accountdetails.Service
 	APIKey       *apikey.Service
+	Assets       *assets.Service
 	Balance      *balance.Service
 	Fees         *fees.Service
 	Rates        *rates.Service
@@ -29,6 +31,7 @@ func New(c *wallbit.Client) *Services {
 	return &Services{
 		AccountDetails: accountdetails.New(c.AccountDetails),
 		APIKey:       apikey.New(c.APIKey),
+		Assets:       assets.New(c.Assets),
 		Balance:      balance.New(c.Balance),
 		Fees:         fees.New(c.Fees),
 		Rates:        rates.New(c.Rates),
