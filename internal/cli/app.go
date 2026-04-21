@@ -10,7 +10,7 @@ import (
 	feessvc "github.com/jeremyjsx/wallbit-cli/internal/services/fees"
 	tradessvc "github.com/jeremyjsx/wallbit-cli/internal/services/trades"
 	transactionssvc "github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
-	wallbit "github.com/jeremyjsx/wallbit-go/client"
+	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
 type App struct {

@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	wallbitclient "github.com/jeremyjsx/wallbit-go/client"
 	wallbittx "github.com/jeremyjsx/wallbit-go/services/transactions"
+	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbitclient.Client, error)
+type ClientProvider func() (*wallbit.Client, error)
 
 type Service struct {
 	clientProvider ClientProvider
@@ -47,5 +47,9 @@ func (s *Service) List(ctx context.Context, input *ListInput) (*wallbittx.ListRe
 		req.FromAmount = input.FromAmount
 		req.ToAmount = input.ToAmount
 	}
-	return c.Transactions.List(ctx, req)
+	res, err := c.Transactions.List(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.Payload, nil
 }

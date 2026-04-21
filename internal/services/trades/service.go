@@ -3,11 +3,11 @@ package trades
 import (
 	"context"
 
-	wallbitclient "github.com/jeremyjsx/wallbit-go/client"
 	wallbittrades "github.com/jeremyjsx/wallbit-go/services/trades"
+	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbitclient.Client, error)
+type ClientProvider func() (*wallbit.Client, error)
 
 type Service struct {
 	clientProvider ClientProvider
@@ -46,7 +46,14 @@ func (s *Service) Create(ctx context.Context, input *CreateInput) (*CreateRespon
 		req.Shares = input.Shares
 		req.StopPrice = input.StopPrice
 		req.LimitPrice = input.LimitPrice
-		req.TimeInForce = input.TimeInForce
+		if input.TimeInForce != "" {
+			tif := input.TimeInForce
+			req.TimeInForce = &tif
+		}
 	}
-	return c.Trades.Create(ctx, req)
+	res, err := c.Trades.Create(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.Payload, nil
 }

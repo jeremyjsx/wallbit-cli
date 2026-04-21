@@ -3,11 +3,11 @@ package apikey
 import (
 	"context"
 
-	wallbitclient "github.com/jeremyjsx/wallbit-go/client"
 	wallbitapikey "github.com/jeremyjsx/wallbit-go/services/apikey"
+	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbitclient.Client, error)
+type ClientProvider func() (*wallbit.Client, error)
 
 type Service struct {
 	clientProvider ClientProvider
@@ -22,5 +22,9 @@ func (s *Service) Revoke(ctx context.Context) (*wallbitapikey.RevokeResponse, er
 	if err != nil {
 		return nil, err
 	}
-	return c.APIKey.Revoke(ctx)
+	res, err := c.APIKey.Revoke(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return res.Payload, nil
 }

@@ -3,11 +3,11 @@ package fees
 import (
 	"context"
 
-	wallbitclient "github.com/jeremyjsx/wallbit-go/client"
 	wallbitfees "github.com/jeremyjsx/wallbit-go/services/fees"
+	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbitclient.Client, error)
+type ClientProvider func() (*wallbit.Client, error)
 
 type Service struct {
 	clientProvider ClientProvider
@@ -32,5 +32,9 @@ func (s *Service) Get(ctx context.Context, input *GetInput) (*GetResponse, error
 	if input != nil {
 		req.Type = input.Type
 	}
-	return c.Fees.Get(ctx, req)
+	res, err := c.Fees.Get(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.Payload, nil
 }
