@@ -5,6 +5,7 @@ import (
 	"github.com/jeremyjsx/wallbit-cli/internal/services/apikey"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/assets"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/balance"
+	"github.com/jeremyjsx/wallbit-cli/internal/services/cards"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/fees"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/rates"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/trades"
@@ -20,6 +21,7 @@ type Services struct {
 	APIKey       *apikey.Service
 	Assets       *assets.Service
 	Balance      *balance.Service
+	Cards        *cards.Service
 	Fees         *fees.Service
 	Rates        *rates.Service
 	Trades       *trades.Service
@@ -33,6 +35,7 @@ func New(c *wallbit.Client) *Services {
 		APIKey:       apikey.New(c.APIKey),
 		Assets:       assets.New(c.Assets),
 		Balance:      balance.New(c.Balance),
+		Cards:        cards.New(c.Cards),
 		Fees:         fees.New(c.Fees),
 		Rates:        rates.New(c.Rates),
 		Trades:       trades.New(c.Trades),
