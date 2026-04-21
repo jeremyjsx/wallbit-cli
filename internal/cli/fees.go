@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	feessvc "github.com/jeremyjsx/wallbit-cli/internal/services/fees"
+	wallbitfees "github.com/jeremyjsx/wallbit-go/services/fees"
 	"github.com/spf13/cobra"
 )
 
@@ -34,14 +34,18 @@ func runFeesGet(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	req := &feessvc.GetInput{
+	req := wallbitfees.GetRequest{
 		Type: strings.ToUpper(strings.TrimSpace(feeType)),
 	}
 	if req.Type == "" {
 		return errors.New("--type is required")
 	}
 
-	out, err := app.FeesService().Get(ctx, req)
+	svc, err := app.Services()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	out, err := svc.Fees.Get(ctx, req)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

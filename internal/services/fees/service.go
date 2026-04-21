@@ -4,35 +4,18 @@ import (
 	"context"
 
 	wallbitfees "github.com/jeremyjsx/wallbit-go/services/fees"
-	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbit.Client, error)
-
 type Service struct {
-	clientProvider ClientProvider
+	sdk *wallbitfees.Service
 }
 
-func New(clientProvider ClientProvider) *Service {
-	return &Service{clientProvider: clientProvider}
+func New(sdk *wallbitfees.Service) *Service {
+	return &Service{sdk: sdk}
 }
 
-type GetInput struct {
-	Type string
-}
-
-type GetResponse = wallbitfees.GetResponse
-
-func (s *Service) Get(ctx context.Context, input *GetInput) (*GetResponse, error) {
-	c, err := s.clientProvider()
-	if err != nil {
-		return nil, err
-	}
-	req := wallbitfees.GetRequest{}
-	if input != nil {
-		req.Type = input.Type
-	}
-	res, err := c.Fees.Get(ctx, req)
+func (s *Service) Get(ctx context.Context, req wallbitfees.GetRequest) (*wallbitfees.GetResponse, error) {
+	res, err := s.sdk.Get(ctx, req)
 	if err != nil {
 		return nil, err
 	}

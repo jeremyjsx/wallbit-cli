@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	transactionssvc "github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
+	wallbittx "github.com/jeremyjsx/wallbit-go/services/transactions"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +43,7 @@ func runTransactionsList(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	req := &transactionssvc.ListInput{
+	req := &wallbittx.ListRequest{
 		Status:   txStatus,
 		Type:     txType,
 		Currency: txCurrency,
@@ -57,7 +57,11 @@ func runTransactionsList(cmd *cobra.Command, args []string) error {
 		req.Limit = &limit
 	}
 
-	out, err := app.TransactionsService().List(ctx, req)
+	svc, err := app.Services()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	out, err := svc.Transactions.List(ctx, req)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
