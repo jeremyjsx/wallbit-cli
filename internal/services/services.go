@@ -7,6 +7,7 @@ import (
 	"github.com/jeremyjsx/wallbit-cli/internal/services/rates"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/trades"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
+	"github.com/jeremyjsx/wallbit-cli/internal/services/wallets"
 	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
@@ -19,6 +20,7 @@ type Services struct {
 	Rates        *rates.Service
 	Trades       *trades.Service
 	Transactions *transactions.Service
+	Wallets      *wallets.Service
 }
 
 func New(c *wallbit.Client) *Services {
@@ -29,5 +31,6 @@ func New(c *wallbit.Client) *Services {
 		Rates:        rates.New(c.Rates),
 		Trades:       trades.New(c.Trades),
 		Transactions: transactions.New(c.Transactions),
+		Wallets:      wallets.New(c.Wallets),
 	}
 }
