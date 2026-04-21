@@ -53,7 +53,7 @@ func runBalanceGetStocks(ctx context.Context, svc *services.Services, with map[s
 func runWalletsGet(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
 	return svc.Wallets.Get(ctx, &wallbitwallets.GetRequest{
 		Currency: strings.ToUpper(getOptionalString(with, "currency")),
-		Network:  strings.ToUpper(getOptionalString(with, "network")),
+		Network:  strings.ToLower(getOptionalString(with, "network")),
 	})
 }
 
