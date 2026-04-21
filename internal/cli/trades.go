@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	tradessvc "github.com/jeremyjsx/wallbit-cli/internal/services/trades"
+	wallbittrades "github.com/jeremyjsx/wallbit-go/services/trades"
 	"github.com/spf13/cobra"
 )
 
@@ -104,12 +104,11 @@ func runTradesCreate(cmd *cobra.Command, args []string) error {
 		return errors.New("--currency is required")
 	}
 
-	req := &tradessvc.CreateInput{
+	req := wallbittrades.CreateRequest{
 		Symbol:      strings.TrimSpace(tradeSymbol),
 		Direction:   direction,
 		Currency:    currency,
 		OrderType:   orderType,
-		TimeInForce: timeInForce,
 	}
 
 	if req.Symbol == "" {
@@ -131,6 +130,10 @@ func runTradesCreate(cmd *cobra.Command, args []string) error {
 	if limitPriceProvided {
 		limitPrice := tradeLimitPrice
 		req.LimitPrice = &limitPrice
+	}
+	if timeInForce != "" {
+		tif := timeInForce
+		req.TimeInForce = &tif
 	}
 
 	svc, err := app.Services()

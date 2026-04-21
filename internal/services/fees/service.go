@@ -14,17 +14,7 @@ func New(sdk *wallbitfees.Service) *Service {
 	return &Service{sdk: sdk}
 }
 
-type GetInput struct {
-	Type string
-}
-
-type GetResponse = wallbitfees.GetResponse
-
-func (s *Service) Get(ctx context.Context, input *GetInput) (*GetResponse, error) {
-	req := wallbitfees.GetRequest{}
-	if input != nil {
-		req.Type = input.Type
-	}
+func (s *Service) Get(ctx context.Context, req wallbitfees.GetRequest) (*wallbitfees.GetResponse, error) {
 	res, err := s.sdk.Get(ctx, req)
 	if err != nil {
 		return nil, err
