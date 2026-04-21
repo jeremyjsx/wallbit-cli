@@ -78,3 +78,82 @@ func TestRunContinueExecutesRemainingSteps(t *testing.T) {
 		t.Fatalf("expected second step to run and pass")
 	}
 }
+
+func TestRunResolvesStepReferences(t *testing.T) {
+	orig := Registry
+	t.Cleanup(func() { Registry = orig })
+
+	Registry = map[string]StepHandler{
+		"produce.step": func(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+			return map[string]any{
+				"value": "AAPL",
+			}, nil
+		},
+		"consume.step": func(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+			got, _ := with["symbol"].(string)
+			return map[string]any{"symbol": got}, nil
+		},
+	}
+
+	spec := &Spec{
+		Version: 1,
+		Name:    "runner-refs",
+		OnError: OnErrorFailFast,
+		Steps: []Step{
+			{ID: "s1", Run: "produce.step"},
+			{
+				ID:  "s2",
+				Run: "consume.step",
+				With: map[string]any{
+					"symbol": "${steps.s1.data.value}",
+				},
+			},
+		},
+	}
+
+	out := Run(context.Background(), spec, nil)
+	if !out.OK {
+		t.Fatalf("expected success, got failure: %+v", out)
+	}
+	if len(out.Steps) != 2 {
+		t.Fatalf("expected 2 steps, got %d", len(out.Steps))
+	}
+	data, _ := out.Steps[1].Data.(map[string]any)
+	if got := data["symbol"]; got != "AAPL" {
+		t.Fatalf("expected resolved symbol AAPL, got %#v", got)
+	}
+}
+
+func TestRunReferenceMissingStepFails(t *testing.T) {
+	orig := Registry
+	t.Cleanup(func() { Registry = orig })
+
+	Registry = map[string]StepHandler{
+		"consume.step": func(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+			return map[string]any{"ok": true}, nil
+		},
+	}
+
+	spec := &Spec{
+		Version: 1,
+		Name:    "runner-missing-ref",
+		OnError: OnErrorFailFast,
+		Steps: []Step{
+			{
+				ID:  "s1",
+				Run: "consume.step",
+				With: map[string]any{
+					"symbol": "${steps.unknown.data.value}",
+				},
+			},
+		},
+	}
+
+	out := Run(context.Background(), spec, nil)
+	if out.OK {
+		t.Fatalf("expected failure for missing reference")
+	}
+	if out.FailedStepID != "s1" {
+		t.Fatalf("expected failed step s1, got %q", out.FailedStepID)
+	}
+}
