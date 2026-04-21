@@ -16,6 +16,7 @@ import (
 )
 
 type StepHandler func(ctx context.Context, svc *services.Services, with map[string]any) (any, error)
+type StepInputValidator func(with map[string]any) error
 
 var Registry = map[string]StepHandler{
 	"rates.get":               runRatesGet,
@@ -33,6 +34,16 @@ var Registry = map[string]StepHandler{
 	"roboadvisor.deposit":     runRoboadvisorDeposit,
 	"roboadvisor.withdraw":    runRoboadvisorWithdraw,
 	"apikey.revoke":           runAPIKeyRevoke,
+}
+
+var InputValidators = map[string]StepInputValidator{
+	"rates.get":            validateRatesGetInput,
+	"assets.get":           validateAssetsGetInput,
+	"cards.block":          validateCardsBlockInput,
+	"cards.unblock":        validateCardsBlockInput,
+	"trades.create":        validateTradesCreateInput,
+	"roboadvisor.deposit":  validateRoboadvisorDepositInput,
+	"roboadvisor.withdraw": validateRoboadvisorWithdrawInput,
 }
 
 func runRatesGet(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
@@ -330,4 +341,91 @@ func getRequiredFloat(with map[string]any, key string) (float64, error) {
 		return 0, fmt.Errorf("with.%s is required", key)
 	}
 	return v, nil
+}
+
+func validateRatesGetInput(with map[string]any) error {
+	if _, err := getRequiredString(with, "source"); err != nil {
+		return err
+	}
+	if _, err := getRequiredString(with, "dest"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateAssetsGetInput(with map[string]any) error {
+	_, err := getRequiredString(with, "symbol")
+	return err
+}
+
+func validateCardsBlockInput(with map[string]any) error {
+	_, err := getRequiredString(with, "card_uuid")
+	return err
+}
+
+func validateTradesCreateInput(with map[string]any) error {
+	if _, err := getRequiredString(with, "symbol"); err != nil {
+		return err
+	}
+	if _, err := getRequiredString(with, "direction"); err != nil {
+		return err
+	}
+	if _, err := getRequiredString(with, "currency"); err != nil {
+		return err
+	}
+	if _, err := getRequiredString(with, "order_type"); err != nil {
+		return err
+	}
+	_, hasAmount, err := getOptionalFloat(with, "amount")
+	if err != nil {
+		return err
+	}
+	_, hasShares, err := getOptionalFloat(with, "shares")
+	if err != nil {
+		return err
+	}
+	if hasAmount == hasShares {
+		return fmt.Errorf("with.amount or with.shares must be provided (exactly one)")
+	}
+	return nil
+}
+
+func validateRoboadvisorDepositInput(with map[string]any) error {
+	if _, err := getRequiredInt(with, "robo_advisor_id"); err != nil {
+		return err
+	}
+	if amount, err := getRequiredFloat(with, "amount"); err != nil {
+		return err
+	} else if amount <= 0 {
+		return fmt.Errorf("with.amount must be positive")
+	}
+	from, err := getRequiredString(with, "from")
+	if err != nil {
+		return err
+	}
+	v := strings.ToUpper(strings.TrimSpace(from))
+	if v != "DEFAULT" && v != "INVESTMENT" {
+		return fmt.Errorf("with.from must be DEFAULT or INVESTMENT")
+	}
+	return nil
+}
+
+func validateRoboadvisorWithdrawInput(with map[string]any) error {
+	if _, err := getRequiredInt(with, "robo_advisor_id"); err != nil {
+		return err
+	}
+	if amount, err := getRequiredFloat(with, "amount"); err != nil {
+		return err
+	} else if amount <= 0 {
+		return fmt.Errorf("with.amount must be positive")
+	}
+	to, err := getRequiredString(with, "to")
+	if err != nil {
+		return err
+	}
+	v := strings.ToUpper(strings.TrimSpace(to))
+	if v != "DEFAULT" && v != "INVESTMENT" {
+		return fmt.Errorf("with.to must be DEFAULT or INVESTMENT")
+	}
+	return nil
 }

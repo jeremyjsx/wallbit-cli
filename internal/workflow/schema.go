@@ -73,3 +73,16 @@ func ValidateSupportedRuns(s *Spec) error {
 	}
 	return nil
 }
+
+func ValidateStepInputs(s *Spec) error {
+	for i, step := range s.Steps {
+		validator, ok := InputValidators[step.Run]
+		if !ok {
+			continue
+		}
+		if err := validator(step.With); err != nil {
+			return fmt.Errorf("steps[%d] (%s): %w", i, step.Run, err)
+		}
+	}
+	return nil
+}

@@ -46,6 +46,9 @@ func runWorkflowRun(cmd *cobra.Command, args []string) error {
 	if err := workflow.ValidateSupportedRuns(spec); err != nil {
 		return fmt.Errorf("%w", err)
 	}
+	if err := workflow.ValidateStepInputs(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
 
 	svc, err := app.Services()
 	if err != nil {
@@ -72,6 +75,9 @@ func runWorkflowValidate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%w", err)
 	}
 	if err := workflow.ValidateSupportedRuns(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	if err := workflow.ValidateStepInputs(spec); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
