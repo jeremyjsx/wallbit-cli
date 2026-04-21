@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/jeremyjsx/wallbit-cli/internal/services/accountdetails"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/apikey"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/balance"
 	"github.com/jeremyjsx/wallbit-cli/internal/services/fees"
@@ -14,6 +15,7 @@ import (
 // Services wires every domain wrapper to the corresponding SDK sub-client.
 // Construct with [New] after you have a *wallbit.Client (one client, one graph).
 type Services struct {
+	AccountDetails *accountdetails.Service
 	APIKey       *apikey.Service
 	Balance      *balance.Service
 	Fees         *fees.Service
@@ -25,6 +27,7 @@ type Services struct {
 
 func New(c *wallbit.Client) *Services {
 	return &Services{
+		AccountDetails: accountdetails.New(c.AccountDetails),
 		APIKey:       apikey.New(c.APIKey),
 		Balance:      balance.New(c.Balance),
 		Fees:         fees.New(c.Fees),
