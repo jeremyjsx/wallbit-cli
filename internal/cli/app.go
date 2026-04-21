@@ -57,7 +57,6 @@ func (a *App) Client() (*wallbit.Client, error) {
 	return a.client, nil
 }
 
-// Services returns the lazily built domain graph backed by a single [*wallbit.Client].
 func (a *App) Services() (*services.Services, error) {
 	if a.services != nil {
 		return a.services, nil
