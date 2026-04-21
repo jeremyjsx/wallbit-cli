@@ -64,3 +64,12 @@ func (s *Spec) Validate() error {
 	}
 	return nil
 }
+
+func ValidateSupportedRuns(s *Spec) error {
+	for i, step := range s.Steps {
+		if _, ok := Registry[step.Run]; !ok {
+			return fmt.Errorf("steps[%d].run %q is not supported", i, step.Run)
+		}
+	}
+	return nil
+}

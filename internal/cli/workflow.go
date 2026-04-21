@@ -22,8 +22,15 @@ var workflowRunCmd = &cobra.Command{
 	RunE:  runWorkflowRun,
 }
 
+var workflowValidateCmd = &cobra.Command{
+	Use:   "validate <file.yaml>",
+	Short: "Validate a workflow YAML file without running it",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runWorkflowValidate,
+}
+
 func init() {
-	workflowCmd.AddCommand(workflowRunCmd)
+	workflowCmd.AddCommand(workflowRunCmd, workflowValidateCmd)
 	rootCmd.AddCommand(workflowCmd)
 }
 
@@ -34,6 +41,9 @@ func runWorkflowRun(cmd *cobra.Command, args []string) error {
 	}
 	spec, err := workflow.ParseSpec(data)
 	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	if err := workflow.ValidateSupportedRuns(spec); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
@@ -50,4 +60,27 @@ func runWorkflowRun(cmd *cobra.Command, args []string) error {
 	enc := json.NewEncoder(cmd.OutOrStdout())
 	enc.SetIndent("", "  ")
 	return enc.Encode(out)
+}
+
+func runWorkflowValidate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(args[0])
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	spec, err := workflow.ParseSpec(data)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	if err := workflow.ValidateSupportedRuns(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	enc := json.NewEncoder(cmd.OutOrStdout())
+	enc.SetIndent("", "  ")
+	return enc.Encode(map[string]any{
+		"ok":      true,
+		"name":    spec.Name,
+		"steps":   len(spec.Steps),
+		"version": spec.Version,
+	})
 }

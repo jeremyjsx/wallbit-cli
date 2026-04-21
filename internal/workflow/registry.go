@@ -8,6 +8,8 @@ import (
 	"github.com/jeremyjsx/wallbit-cli/internal/services"
 	wallbitaccountdetails "github.com/jeremyjsx/wallbit-go/services/accountdetails"
 	wallbitassets "github.com/jeremyjsx/wallbit-go/services/assets"
+	wallbitroboadvisor "github.com/jeremyjsx/wallbit-go/services/roboadvisor"
+	wallbittrades "github.com/jeremyjsx/wallbit-go/services/trades"
 	wallbittransactions "github.com/jeremyjsx/wallbit-go/services/transactions"
 	wallbitrates "github.com/jeremyjsx/wallbit-go/services/rates"
 	wallbitwallets "github.com/jeremyjsx/wallbit-go/services/wallets"
@@ -25,6 +27,12 @@ var Registry = map[string]StepHandler{
 	"account_details.get":     runAccountDetailsGet,
 	"transactions.list":       runTransactionsList,
 	"cards.list":              runCardsList,
+	"cards.block":             runCardsBlock,
+	"cards.unblock":           runCardsUnblock,
+	"trades.create":           runTradesCreate,
+	"roboadvisor.deposit":     runRoboadvisorDeposit,
+	"roboadvisor.withdraw":    runRoboadvisorWithdraw,
+	"apikey.revoke":           runAPIKeyRevoke,
 }
 
 func runRatesGet(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
@@ -113,6 +121,119 @@ func runCardsList(ctx context.Context, svc *services.Services, with map[string]a
 	return svc.Cards.List(ctx)
 }
 
+func runCardsBlock(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	cardUUID, err := getRequiredString(with, "card_uuid")
+	if err != nil {
+		return nil, err
+	}
+	return svc.Cards.Block(ctx, cardUUID)
+}
+
+func runCardsUnblock(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	cardUUID, err := getRequiredString(with, "card_uuid")
+	if err != nil {
+		return nil, err
+	}
+	return svc.Cards.Unblock(ctx, cardUUID)
+}
+
+func runTradesCreate(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	symbol, err := getRequiredString(with, "symbol")
+	if err != nil {
+		return nil, err
+	}
+	direction, err := getRequiredString(with, "direction")
+	if err != nil {
+		return nil, err
+	}
+	currency, err := getRequiredString(with, "currency")
+	if err != nil {
+		return nil, err
+	}
+	orderType, err := getRequiredString(with, "order_type")
+	if err != nil {
+		return nil, err
+	}
+
+	req := wallbittrades.CreateRequest{
+		Symbol:    strings.ToUpper(strings.TrimSpace(symbol)),
+		Direction: strings.ToUpper(strings.TrimSpace(direction)),
+		Currency:  strings.ToUpper(strings.TrimSpace(currency)),
+		OrderType: strings.ToUpper(strings.TrimSpace(orderType)),
+	}
+	if v, ok, err := getOptionalFloat(with, "amount"); err != nil {
+		return nil, err
+	} else if ok {
+		req.Amount = &v
+	}
+	if v, ok, err := getOptionalFloat(with, "shares"); err != nil {
+		return nil, err
+	} else if ok {
+		req.Shares = &v
+	}
+	if v, ok, err := getOptionalFloat(with, "stop_price"); err != nil {
+		return nil, err
+	} else if ok {
+		req.StopPrice = &v
+	}
+	if v, ok, err := getOptionalFloat(with, "limit_price"); err != nil {
+		return nil, err
+	} else if ok {
+		req.LimitPrice = &v
+	}
+	if v := getOptionalString(with, "time_in_force"); v != "" {
+		timeInForce := strings.ToUpper(v)
+		req.TimeInForce = &timeInForce
+	}
+	return svc.Trades.Create(ctx, req)
+}
+
+func runRoboadvisorDeposit(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	roboAdvisorID, err := getRequiredInt(with, "robo_advisor_id")
+	if err != nil {
+		return nil, err
+	}
+	amount, err := getRequiredFloat(with, "amount")
+	if err != nil {
+		return nil, err
+	}
+	from, err := getRequiredString(with, "from")
+	if err != nil {
+		return nil, err
+	}
+	req := wallbitroboadvisor.DepositRequest{
+		RoboAdvisorID: roboAdvisorID,
+		Amount:        amount,
+		From:          wallbitroboadvisor.AccountType(strings.ToUpper(strings.TrimSpace(from))),
+	}
+	return svc.RoboAdvisor.Deposit(ctx, req)
+}
+
+func runRoboadvisorWithdraw(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	roboAdvisorID, err := getRequiredInt(with, "robo_advisor_id")
+	if err != nil {
+		return nil, err
+	}
+	amount, err := getRequiredFloat(with, "amount")
+	if err != nil {
+		return nil, err
+	}
+	to, err := getRequiredString(with, "to")
+	if err != nil {
+		return nil, err
+	}
+	req := wallbitroboadvisor.WithdrawRequest{
+		RoboAdvisorID: roboAdvisorID,
+		Amount:        amount,
+		To:            wallbitroboadvisor.AccountType(strings.ToUpper(strings.TrimSpace(to))),
+	}
+	return svc.RoboAdvisor.Withdraw(ctx, req)
+}
+
+func runAPIKeyRevoke(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	return svc.APIKey.Revoke(ctx)
+}
+
 func getRequiredString(with map[string]any, key string) (string, error) {
 	if with == nil {
 		return "", fmt.Errorf("with.%s is required", key)
@@ -165,4 +286,48 @@ func getOptionalInt(with map[string]any, key string) (int, bool, error) {
 	default:
 		return 0, false, fmt.Errorf("with.%s must be a number", key)
 	}
+}
+
+func getRequiredInt(with map[string]any, key string) (int, error) {
+	v, ok, err := getOptionalInt(with, key)
+	if err != nil {
+		return 0, err
+	}
+	if !ok {
+		return 0, fmt.Errorf("with.%s is required", key)
+	}
+	return v, nil
+}
+
+func getOptionalFloat(with map[string]any, key string) (float64, bool, error) {
+	if with == nil {
+		return 0, false, nil
+	}
+	raw, ok := with[key]
+	if !ok || raw == nil {
+		return 0, false, nil
+	}
+	switch v := raw.(type) {
+	case float64:
+		return v, true, nil
+	case float32:
+		return float64(v), true, nil
+	case int:
+		return float64(v), true, nil
+	case int64:
+		return float64(v), true, nil
+	default:
+		return 0, false, fmt.Errorf("with.%s must be a number", key)
+	}
+}
+
+func getRequiredFloat(with map[string]any, key string) (float64, error) {
+	v, ok, err := getOptionalFloat(with, key)
+	if err != nil {
+		return 0, err
+	}
+	if !ok {
+		return 0, fmt.Errorf("with.%s is required", key)
+	}
+	return v, nil
 }
