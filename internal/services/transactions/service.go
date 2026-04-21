@@ -5,17 +5,14 @@ import (
 	"time"
 
 	wallbittx "github.com/jeremyjsx/wallbit-go/services/transactions"
-	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbit.Client, error)
-
 type Service struct {
-	clientProvider ClientProvider
+	sdk *wallbittx.Service
 }
 
-func New(clientProvider ClientProvider) *Service {
-	return &Service{clientProvider: clientProvider}
+func New(sdk *wallbittx.Service) *Service {
+	return &Service{sdk: sdk}
 }
 
 type ListInput struct {
@@ -31,10 +28,6 @@ type ListInput struct {
 }
 
 func (s *Service) List(ctx context.Context, input *ListInput) (*wallbittx.ListResponse, error) {
-	c, err := s.clientProvider()
-	if err != nil {
-		return nil, err
-	}
 	req := &wallbittx.ListRequest{}
 	if input != nil {
 		req.Page = input.Page
@@ -47,7 +40,7 @@ func (s *Service) List(ctx context.Context, input *ListInput) (*wallbittx.ListRe
 		req.FromAmount = input.FromAmount
 		req.ToAmount = input.ToAmount
 	}
-	res, err := c.Transactions.List(ctx, req)
+	res, err := s.sdk.List(ctx, req)
 	if err != nil {
 		return nil, err
 	}

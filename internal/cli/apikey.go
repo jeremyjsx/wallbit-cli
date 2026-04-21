@@ -36,7 +36,11 @@ func runAPIKeyRevoke(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	out, err := app.APIKeyService().Revoke(ctx)
+	svc, err := app.Services()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	out, err := svc.APIKey.Revoke(ctx)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

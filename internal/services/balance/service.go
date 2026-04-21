@@ -4,25 +4,18 @@ import (
 	"context"
 
 	wallbitbalance "github.com/jeremyjsx/wallbit-go/services/balance"
-	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbit.Client, error)
-
 type Service struct {
-	clientProvider ClientProvider
+	sdk *wallbitbalance.Service
 }
 
-func New(clientProvider ClientProvider) *Service {
-	return &Service{clientProvider: clientProvider}
+func New(sdk *wallbitbalance.Service) *Service {
+	return &Service{sdk: sdk}
 }
 
 func (s *Service) GetChecking(ctx context.Context) (*wallbitbalance.CheckingBalanceResponse, error) {
-	c, err := s.clientProvider()
-	if err != nil {
-		return nil, err
-	}
-	res, err := c.Balance.GetChecking(ctx)
+	res, err := s.sdk.GetChecking(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -30,11 +23,7 @@ func (s *Service) GetChecking(ctx context.Context) (*wallbitbalance.CheckingBala
 }
 
 func (s *Service) GetStocks(ctx context.Context) (*wallbitbalance.StocksBalanceResponse, error) {
-	c, err := s.clientProvider()
-	if err != nil {
-		return nil, err
-	}
-	res, err := c.Balance.GetStocks(ctx)
+	res, err := s.sdk.GetStocks(ctx)
 	if err != nil {
 		return nil, err
 	}

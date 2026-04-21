@@ -57,7 +57,11 @@ func runTransactionsList(cmd *cobra.Command, args []string) error {
 		req.Limit = &limit
 	}
 
-	out, err := app.TransactionsService().List(ctx, req)
+	svc, err := app.Services()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	out, err := svc.Transactions.List(ctx, req)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

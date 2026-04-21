@@ -41,7 +41,11 @@ func runFeesGet(cmd *cobra.Command, args []string) error {
 		return errors.New("--type is required")
 	}
 
-	out, err := app.FeesService().Get(ctx, req)
+	svc, err := app.Services()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	out, err := svc.Fees.Get(ctx, req)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

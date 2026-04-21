@@ -133,7 +133,11 @@ func runTradesCreate(cmd *cobra.Command, args []string) error {
 		req.LimitPrice = &limitPrice
 	}
 
-	out, err := app.TradesService().Create(ctx, req)
+	svc, err := app.Services()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	out, err := svc.Trades.Create(ctx, req)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

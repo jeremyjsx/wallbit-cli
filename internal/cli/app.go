@@ -5,11 +5,7 @@ import (
 	"time"
 
 	"github.com/jeremyjsx/wallbit-cli/internal/credentials"
-	apikeysvc "github.com/jeremyjsx/wallbit-cli/internal/services/apikey"
-	balancesvc "github.com/jeremyjsx/wallbit-cli/internal/services/balance"
-	feessvc "github.com/jeremyjsx/wallbit-cli/internal/services/fees"
-	tradessvc "github.com/jeremyjsx/wallbit-cli/internal/services/trades"
-	transactionssvc "github.com/jeremyjsx/wallbit-cli/internal/services/transactions"
+	"github.com/jeremyjsx/wallbit-cli/internal/services"
 	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
@@ -18,12 +14,8 @@ type App struct {
 	baseURL    string
 	timeout    time.Duration
 
-	client          *wallbit.Client
-	apiKeySvc       *apikeysvc.Service
-	balanceSvc      *balancesvc.Service
-	feesSvc         *feessvc.Service
-	tradesSvc       *tradessvc.Service
-	transactionsSvc *transactionssvc.Service
+	client   *wallbit.Client
+	services *services.Services
 }
 
 func NewApp(apiKeyFlag, baseURL string, timeout time.Duration) *App {
@@ -65,42 +57,15 @@ func (a *App) Client() (*wallbit.Client, error) {
 	return a.client, nil
 }
 
-func (a *App) BalanceService() *balancesvc.Service {
-	if a.balanceSvc != nil {
-		return a.balanceSvc
+// Services returns the lazily built domain graph backed by a single [*wallbit.Client].
+func (a *App) Services() (*services.Services, error) {
+	if a.services != nil {
+		return a.services, nil
 	}
-	a.balanceSvc = balancesvc.New(a.Client)
-	return a.balanceSvc
-}
-
-func (a *App) TransactionsService() *transactionssvc.Service {
-	if a.transactionsSvc != nil {
-		return a.transactionsSvc
+	c, err := a.Client()
+	if err != nil {
+		return nil, err
 	}
-	a.transactionsSvc = transactionssvc.New(a.Client)
-	return a.transactionsSvc
-}
-
-func (a *App) TradesService() *tradessvc.Service {
-	if a.tradesSvc != nil {
-		return a.tradesSvc
-	}
-	a.tradesSvc = tradessvc.New(a.Client)
-	return a.tradesSvc
-}
-
-func (a *App) FeesService() *feessvc.Service {
-	if a.feesSvc != nil {
-		return a.feesSvc
-	}
-	a.feesSvc = feessvc.New(a.Client)
-	return a.feesSvc
-}
-
-func (a *App) APIKeyService() *apikeysvc.Service {
-	if a.apiKeySvc != nil {
-		return a.apiKeySvc
-	}
-	a.apiKeySvc = apikeysvc.New(a.Client)
-	return a.apiKeySvc
+	a.services = services.New(c)
+	return a.services, nil
 }

@@ -4,17 +4,14 @@ import (
 	"context"
 
 	wallbittrades "github.com/jeremyjsx/wallbit-go/services/trades"
-	"github.com/jeremyjsx/wallbit-go/wallbit"
 )
 
-type ClientProvider func() (*wallbit.Client, error)
-
 type Service struct {
-	clientProvider ClientProvider
+	sdk *wallbittrades.Service
 }
 
-func New(clientProvider ClientProvider) *Service {
-	return &Service{clientProvider: clientProvider}
+func New(sdk *wallbittrades.Service) *Service {
+	return &Service{sdk: sdk}
 }
 
 type CreateInput struct {
@@ -32,10 +29,6 @@ type CreateInput struct {
 type CreateResponse = wallbittrades.CreateResponse
 
 func (s *Service) Create(ctx context.Context, input *CreateInput) (*CreateResponse, error) {
-	c, err := s.clientProvider()
-	if err != nil {
-		return nil, err
-	}
 	req := wallbittrades.CreateRequest{}
 	if input != nil {
 		req.Symbol = input.Symbol
@@ -51,7 +44,7 @@ func (s *Service) Create(ctx context.Context, input *CreateInput) (*CreateRespon
 			req.TimeInForce = &tif
 		}
 	}
-	res, err := c.Trades.Create(ctx, req)
+	res, err := s.sdk.Create(ctx, req)
 	if err != nil {
 		return nil, err
 	}
