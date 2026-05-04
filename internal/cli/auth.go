@@ -43,15 +43,15 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 	key := strings.TrimSpace(app.APIKeyFlag())
 	if key == "" {
 		if term.IsTerminal(int(os.Stdin.Fd())) {
-			fmt.Fprint(cmd.ErrOrStderr(), "Enter API key (hidden): ")
+			_, _ = fmt.Fprint(cmd.ErrOrStderr(), "Enter API key (hidden): ")
 			secret, err := term.ReadPassword(int(os.Stdin.Fd()))
-			fmt.Fprintln(cmd.ErrOrStderr())
+			_, _ = fmt.Fprintln(cmd.ErrOrStderr())
 			if err != nil {
 				return fmt.Errorf("read hidden API key: %w", err)
 			}
 			key = strings.TrimSpace(string(secret))
 		} else {
-			fmt.Fprint(cmd.ErrOrStderr(), "Enter API key: ")
+			_, _ = fmt.Fprint(cmd.ErrOrStderr(), "Enter API key: ")
 			line, err := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
 			if err != nil {
 				return fmt.Errorf("read API key: %w", err)
@@ -62,19 +62,19 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 	if err := credentials.Save(key); err != nil {
 		return err
 	}
-	fmt.Fprintln(cmd.OutOrStdout(), "API key saved.")
+	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "API key saved.")
 	return nil
 }
 
 func runAuthStatus(cmd *cobra.Command, args []string) error {
-	fmt.Fprintf(cmd.OutOrStdout(), "%s set: %v\n", credentials.EnvAPIKey, credentials.EnvConfigured())
-	fmt.Fprintf(cmd.OutOrStdout(), "credentials file present: %v\n", credentials.FileStoreConfigured())
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s set: %v\n", credentials.EnvAPIKey, credentials.EnvConfigured())
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "credentials file present: %v\n", credentials.FileStoreConfigured())
 	_, src, err := credentials.Load("")
 	switch {
 	case err == nil:
-		fmt.Fprintf(cmd.OutOrStdout(), "effective key source: %s\n", src)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "effective key source: %s\n", src)
 	case errors.Is(err, credentials.ErrNotConfigured):
-		fmt.Fprintln(cmd.OutOrStdout(), "effective key: not configured")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "effective key: not configured")
 	default:
 		return err
 	}
@@ -85,6 +85,6 @@ func runAuthLogout(cmd *cobra.Command, args []string) error {
 	if err := credentials.Delete(); err != nil {
 		return err
 	}
-	fmt.Fprintln(cmd.OutOrStdout(), "Local API key removed (if it existed).")
+	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Local API key removed (if it existed).")
 	return nil
 }

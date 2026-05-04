@@ -63,10 +63,10 @@ func indentEachLine(s string, cols int) string {
 func fprintLogo(w io.Writer) {
 	body := indentEachLine(strings.TrimPrefix(logo, "\n"), logoShiftCols)
 	if !colorEnabled(w) {
-		fmt.Fprint(w, body, "\n\n")
+		_, _ = fmt.Fprint(w, body, "\n\n")
 		return
 	}
-	fmt.Fprint(w, logoColor, body, logoReset, "\n\n")
+	_, _ = fmt.Fprint(w, logoColor, body, logoReset, "\n\n")
 }
 
 func colorEnabled(w io.Writer) bool {
