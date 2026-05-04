@@ -73,7 +73,7 @@ func saveToFile(apiKey string) error {
 		return fmt.Errorf("encode credentials: %w", err)
 	}
 	if err := atomicWriteFile(path, payload, 0o600); err != nil {
-		return fmt.Errorf("write credentisl file: %w", err)
+		return fmt.Errorf("write credentials file: %w", err)
 	}
 	return nil
 }
