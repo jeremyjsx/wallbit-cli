@@ -37,7 +37,25 @@ func Run(ctx context.Context, spec *Spec, svc *services.Services) *RunResult {
 			continue
 		}
 
-		data, err := handler(ctx, svc, step.With)
+		withResolved, err := resolveStepWith(step.With, out.Steps)
+		if err != nil {
+			r := StepResult{
+				ID:         step.ID,
+				Run:        step.Run,
+				OK:         false,
+				Error:      &StepError{Message: err.Error()},
+				DurationMS: time.Since(stepStart).Milliseconds(),
+			}
+			out.Steps = append(out.Steps, r)
+			out.OK = false
+			out.FailedStepID = step.ID
+			if spec.OnError == OnErrorFailFast {
+				break
+			}
+			continue
+		}
+
+		data, err := handler(ctx, svc, withResolved)
 		if err != nil {
 			r := StepResult{
 				ID:         step.ID,

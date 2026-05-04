@@ -4,10 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/jeremyjsx/wallbit-cli/internal/credentials"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var authCmd = &cobra.Command{
@@ -40,12 +42,22 @@ func init() {
 func runAuthLogin(cmd *cobra.Command, args []string) error {
 	key := strings.TrimSpace(app.APIKeyFlag())
 	if key == "" {
-		fmt.Fprint(cmd.ErrOrStderr(), "Enter API key: ")
-		line, err := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
-		if err != nil {
-			return fmt.Errorf("read API key: %w", err)
+		if term.IsTerminal(int(os.Stdin.Fd())) {
+			fmt.Fprint(cmd.ErrOrStderr(), "Enter API key (hidden): ")
+			secret, err := term.ReadPassword(int(os.Stdin.Fd()))
+			fmt.Fprintln(cmd.ErrOrStderr())
+			if err != nil {
+				return fmt.Errorf("read hidden API key: %w", err)
+			}
+			key = strings.TrimSpace(string(secret))
+		} else {
+			fmt.Fprint(cmd.ErrOrStderr(), "Enter API key: ")
+			line, err := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
+			if err != nil {
+				return fmt.Errorf("read API key: %w", err)
+			}
+			key = strings.TrimSpace(line)
 		}
-		key = strings.TrimSpace(line)
 	}
 	if err := credentials.Save(key); err != nil {
 		return err

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -48,14 +47,19 @@ func runCardsList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Cards.List(ctx)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Cards.List(ctx)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }
 
 func runCardsBlock(cmd *cobra.Command, args []string) error {
@@ -71,14 +75,19 @@ func runCardsBlock(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Cards.Block(ctx, uuid)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Cards.Block(ctx, uuid)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }
 
 func runCardsUnblock(cmd *cobra.Command, args []string) error {
@@ -94,12 +103,17 @@ func runCardsUnblock(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Cards.Unblock(ctx, uuid)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Cards.Unblock(ctx, uuid)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }

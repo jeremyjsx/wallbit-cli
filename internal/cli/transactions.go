@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	wallbittx "github.com/jeremyjsx/wallbit-go/services/transactions"
@@ -61,12 +60,17 @@ func runTransactionsList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Transactions.List(ctx, req)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Transactions.List(ctx, req)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }

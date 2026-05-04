@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -22,8 +21,15 @@ var workflowRunCmd = &cobra.Command{
 	RunE:  runWorkflowRun,
 }
 
+var workflowValidateCmd = &cobra.Command{
+	Use:   "validate <file.yaml>",
+	Short: "Validate a workflow YAML file without running it",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runWorkflowValidate,
+}
+
 func init() {
-	workflowCmd.AddCommand(workflowRunCmd)
+	workflowCmd.AddCommand(workflowRunCmd, workflowValidateCmd)
 	rootCmd.AddCommand(workflowCmd)
 }
 
@@ -36,6 +42,12 @@ func runWorkflowRun(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
+	if err := workflow.ValidateSupportedRuns(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	if err := workflow.ValidateStepInputs(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
 
 	svc, err := app.Services()
 	if err != nil {
@@ -45,9 +57,37 @@ func runWorkflowRun(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	out := workflow.Run(ctx, spec, svc)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		out = workflow.Run(ctx, spec, svc)
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	return writeJSON(out, cmd)
+}
 
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+func runWorkflowValidate(cmd *cobra.Command, args []string) error {
+	data, err := os.ReadFile(args[0])
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	spec, err := workflow.ParseSpec(data)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	if err := workflow.ValidateSupportedRuns(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	if err := workflow.ValidateStepInputs(spec); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return writeJSON(map[string]any{
+		"ok":      true,
+		"name":    spec.Name,
+		"steps":   len(spec.Steps),
+		"version": spec.Version,
+	}, cmd)
 }

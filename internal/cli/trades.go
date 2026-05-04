@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -105,10 +104,10 @@ func runTradesCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	req := wallbittrades.CreateRequest{
-		Symbol:      strings.TrimSpace(tradeSymbol),
-		Direction:   direction,
-		Currency:    currency,
-		OrderType:   orderType,
+		Symbol:    strings.TrimSpace(tradeSymbol),
+		Direction: direction,
+		Currency:  currency,
+		OrderType: orderType,
 	}
 
 	if req.Symbol == "" {
@@ -140,12 +139,17 @@ func runTradesCreate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Trades.Create(ctx, req)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Trades.Create(ctx, req)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }

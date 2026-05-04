@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -38,13 +37,19 @@ func runBalanceGetChecking(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Balance.GetChecking(ctx)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Balance.GetChecking(ctx)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }
 
 func runBalanceGetStocks(cmd *cobra.Command, args []string) error {
@@ -55,11 +60,17 @@ func runBalanceGetStocks(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.Balance.GetStocks(ctx)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.Balance.GetStocks(ctx)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }
