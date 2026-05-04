@@ -33,6 +33,24 @@ func TestValidateSupportedRuns(t *testing.T) {
 	}
 }
 
+func TestValidateSupportedRunsFeesAndOperations(t *testing.T) {
+	for _, run := range []string{
+		"fees.get",
+		"operations.deposit_investment",
+		"operations.withdraw_investment",
+	} {
+		spec := &Spec{
+			Version: 1,
+			Name:    "parity",
+			OnError: OnErrorFailFast,
+			Steps:   []Step{{ID: "s1", Run: run}},
+		}
+		if err := ValidateSupportedRuns(spec); err != nil {
+			t.Fatalf("run %q: %v", run, err)
+		}
+	}
+}
+
 func TestValidateStepInputsTradesCreateRequiresExactlyOneAmountOrShares(t *testing.T) {
 	spec := &Spec{
 		Version: 1,
