@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var app = NewApp("", "https://api.dev.wallbit.io", 30*time.Second)
+var app = NewApp("", "https://api.wallbit.io", 30*time.Second)
 
 var rootCmd = &cobra.Command{
 	Use:   "wallbit",
@@ -16,6 +16,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	rootCmd.Version = formatBuildVersion()
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
