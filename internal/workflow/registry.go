@@ -8,6 +8,8 @@ import (
 	"github.com/jeremyjsx/wallbit-cli/internal/services"
 	wallbitaccountdetails "github.com/jeremyjsx/wallbit-go/services/accountdetails"
 	wallbitassets "github.com/jeremyjsx/wallbit-go/services/assets"
+	wallbitfees "github.com/jeremyjsx/wallbit-go/services/fees"
+	wallbitoperations "github.com/jeremyjsx/wallbit-go/services/operations"
 	wallbitrates "github.com/jeremyjsx/wallbit-go/services/rates"
 	wallbitroboadvisor "github.com/jeremyjsx/wallbit-go/services/roboadvisor"
 	wallbittrades "github.com/jeremyjsx/wallbit-go/services/trades"
@@ -19,31 +21,36 @@ type StepHandler func(ctx context.Context, svc *services.Services, with map[stri
 type StepInputValidator func(with map[string]any) error
 
 var Registry = map[string]StepHandler{
-	"rates.get":            runRatesGet,
-	"balance.get_checking": runBalanceGetChecking,
-	"balance.get_stocks":   runBalanceGetStocks,
-	"wallets.get":          runWalletsGet,
-	"assets.list":          runAssetsList,
-	"assets.get":           runAssetsGet,
-	"account_details.get":  runAccountDetailsGet,
-	"transactions.list":    runTransactionsList,
-	"cards.list":           runCardsList,
-	"cards.block":          runCardsBlock,
-	"cards.unblock":        runCardsUnblock,
-	"trades.create":        runTradesCreate,
-	"roboadvisor.deposit":  runRoboadvisorDeposit,
-	"roboadvisor.withdraw": runRoboadvisorWithdraw,
-	"apikey.revoke":        runAPIKeyRevoke,
+	"rates.get":                      runRatesGet,
+	"balance.get_checking":           runBalanceGetChecking,
+	"balance.get_stocks":             runBalanceGetStocks,
+	"wallets.get":                    runWalletsGet,
+	"assets.list":                    runAssetsList,
+	"assets.get":                     runAssetsGet,
+	"account_details.get":            runAccountDetailsGet,
+	"transactions.list":              runTransactionsList,
+	"cards.list":                     runCardsList,
+	"cards.block":                    runCardsBlock,
+	"cards.unblock":                  runCardsUnblock,
+	"trades.create":                  runTradesCreate,
+	"roboadvisor.deposit":            runRoboadvisorDeposit,
+	"roboadvisor.withdraw":           runRoboadvisorWithdraw,
+	"fees.get":                       runFeesGet,
+	"operations.deposit_investment":  runOperationsDepositInvestment,
+	"operations.withdraw_investment": runOperationsWithdrawInvestment,
+	"apikey.revoke":                  runAPIKeyRevoke,
 }
 
 var InputValidators = map[string]StepInputValidator{
-	"rates.get":            validateRatesGetInput,
-	"assets.get":           validateAssetsGetInput,
-	"cards.block":          validateCardsBlockInput,
-	"cards.unblock":        validateCardsBlockInput,
-	"trades.create":        validateTradesCreateInput,
-	"roboadvisor.deposit":  validateRoboadvisorDepositInput,
-	"roboadvisor.withdraw": validateRoboadvisorWithdrawInput,
+	"rates.get":                      validateRatesGetInput,
+	"assets.get":                     validateAssetsGetInput,
+	"cards.block":                    validateCardsBlockInput,
+	"cards.unblock":                  validateCardsBlockInput,
+	"trades.create":                  validateTradesCreateInput,
+	"roboadvisor.deposit":            validateRoboadvisorDepositInput,
+	"roboadvisor.withdraw":           validateRoboadvisorWithdrawInput,
+	"operations.deposit_investment":  validateOperationsDepositInvestmentInput,
+	"operations.withdraw_investment": validateOperationsWithdrawInvestmentInput,
 }
 
 func runRatesGet(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
@@ -241,6 +248,50 @@ func runRoboadvisorWithdraw(ctx context.Context, svc *services.Services, with ma
 	return svc.RoboAdvisor.Withdraw(ctx, req)
 }
 
+func runFeesGet(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	t := strings.ToUpper(strings.TrimSpace(getOptionalString(with, "type")))
+	if t == "" {
+		t = "TRADE"
+	}
+	return svc.Fees.Get(ctx, wallbitfees.GetRequest{Type: t})
+}
+
+func runOperationsDepositInvestment(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	currency, err := getRequiredString(with, "currency")
+	if err != nil {
+		return nil, err
+	}
+	amount, err := getRequiredFloat(with, "amount")
+	if err != nil {
+		return nil, err
+	}
+	if amount <= 0 {
+		return nil, fmt.Errorf("with.amount must be positive")
+	}
+	return svc.Operations.DepositInvestment(ctx, wallbitoperations.InvestmentDepositRequest{
+		Currency: strings.ToUpper(strings.TrimSpace(currency)),
+		Amount:   amount,
+	})
+}
+
+func runOperationsWithdrawInvestment(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
+	currency, err := getRequiredString(with, "currency")
+	if err != nil {
+		return nil, err
+	}
+	amount, err := getRequiredFloat(with, "amount")
+	if err != nil {
+		return nil, err
+	}
+	if amount <= 0 {
+		return nil, fmt.Errorf("with.amount must be positive")
+	}
+	return svc.Operations.WithdrawInvestment(ctx, wallbitoperations.InvestmentWithdrawRequest{
+		Currency: strings.ToUpper(strings.TrimSpace(currency)),
+		Amount:   amount,
+	})
+}
+
 func runAPIKeyRevoke(ctx context.Context, svc *services.Services, with map[string]any) (any, error) {
 	return svc.APIKey.Revoke(ctx)
 }
@@ -426,6 +477,30 @@ func validateRoboadvisorWithdrawInput(with map[string]any) error {
 	v := strings.ToUpper(strings.TrimSpace(to))
 	if v != "DEFAULT" && v != "INVESTMENT" {
 		return fmt.Errorf("with.to must be DEFAULT or INVESTMENT")
+	}
+	return nil
+}
+
+func validateOperationsDepositInvestmentInput(with map[string]any) error {
+	if _, err := getRequiredString(with, "currency"); err != nil {
+		return err
+	}
+	if amount, err := getRequiredFloat(with, "amount"); err != nil {
+		return err
+	} else if amount <= 0 {
+		return fmt.Errorf("with.amount must be positive")
+	}
+	return nil
+}
+
+func validateOperationsWithdrawInvestmentInput(with map[string]any) error {
+	if _, err := getRequiredString(with, "currency"); err != nil {
+		return err
+	}
+	if amount, err := getRequiredFloat(with, "amount"); err != nil {
+		return err
+	} else if amount <= 0 {
+		return fmt.Errorf("with.amount must be positive")
 	}
 	return nil
 }
