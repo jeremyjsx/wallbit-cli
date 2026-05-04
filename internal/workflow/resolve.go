@@ -76,7 +76,7 @@ func resolveStringRefs(s string, prior []StepResult) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		b.WriteString(fmt.Sprint(val))
+		_, _ = fmt.Fprint(&b, val)
 		last = m[1]
 	}
 	b.WriteString(s[last:])
