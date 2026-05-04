@@ -7,3 +7,9 @@
 
 # Test binary, built with `go test -c`
 *.test
+
+# Web (Next.js + Bun)
+web/node_modules
+web/.next
+web/out
+web/.turbo

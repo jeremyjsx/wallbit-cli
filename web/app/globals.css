@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+/*
+ * Wallbit brand — primary matches CLI logo (internal/cli/logo.go): rgb(13, 153, 255)
+ */
+:root {
+  --background: #070708;
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --border: #27272a;
+  --accent: #0d99ff;
+  --accent-muted: color-mix(in srgb, var(--accent) 22%, transparent);
+  --accent-dim: color-mix(in srgb, var(--accent) 12%, transparent);
+  --panel: #0f0f12;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Wallbit scale — 500 = logo blue */
+  --color-wallbit-50: #eff8ff;
+  --color-wallbit-100: #d9efff;
+  --color-wallbit-200: #b3dfff;
+  --color-wallbit-300: #7fc8ff;
+  --color-wallbit-400: #47b0ff;
+  --color-wallbit-500: #0d99ff;
+  --color-wallbit-600: #0a7fd4;
+  --color-wallbit-700: #0866aa;
+  --color-wallbit-800: #064d80;
+  --color-wallbit-900: #043353;
+  --color-wallbit-950: #021a2a;
+
+  /* Semantic aliases */
+  --color-brand: var(--color-wallbit-500);
+  --color-brand-hover: var(--color-wallbit-400);
+  --color-brand-muted: var(--color-wallbit-300);
+  --color-brand-foreground: #ffffff;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Block-caret keyframe used by the Quickstart terminal's trailing caret. */
+@keyframes hero-caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/*
+ * Announcement bar shimmer — a translucent brand-tinted sweep that
+ * rides across the strip every few seconds. Provides motion without
+ * forcing users into a scrolling marquee.
+ */
+.announcement-shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(13, 153, 255, 0.22) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  filter: blur(2px);
+  transform: translateX(-100%);
+  animation: announcement-sweep 7s ease-in-out infinite;
+}
+
+@keyframes announcement-sweep {
+  0% { transform: translateX(-100%); opacity: 0; }
+  8% { opacity: 1; }
+  55% { transform: translateX(220%); opacity: 1; }
+  56%, 100% { transform: translateX(220%); opacity: 0; }
+}
+
+/* Typewriter sequence used by the Quickstart terminal. Each line uses
+ * --tw-len (chars, scales duration) + --tw-delay (s, sequence offset).
+ * steps() requires a literal int, so we approximate per-character feel
+ * with a fine-grained step count and let duration ride on --tw-len. */
+.tw-line {
+  display: block;
+  clip-path: inset(0 100% 0 0);
+  animation: tw-reveal calc(var(--tw-len, 30) * 32ms) steps(60, end) var(--tw-delay, 0s) forwards;
+}
+
+@keyframes tw-reveal {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Trailing block-caret that fades in after the last line and blinks forever. */
+.tw-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 0.15em;
+  background: currentColor;
+  vertical-align: -0.1em;
+  opacity: 0;
+  animation:
+    tw-caret-fade-in 0.2s linear var(--tw-delay, 0s) forwards,
+    hero-caret-blink 1s steps(2, end) var(--tw-delay, 0s) infinite;
+}
+
+@keyframes tw-caret-fade-in {
+  to { opacity: 1; }
+}
+
+section[id],
+h2[id],
+h3[id] {
+  scroll-margin-top: 96px;
+}
+
+/* Hero grid */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(13, 153, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 153, 255, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 20%, transparent 70%);
+}
+
+/*
+ * Features: two-layer card.
+ * The outer wrapper paints an animated conic gradient "trace" on hover;
+ * the inner wrapper is the actual card surface.
+ */
+.feature-card {
+  isolation: isolate;
+}
+
+.feature-card-borderbox {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.feature-card-ring {
+  position: absolute;
+  inset: -45%;
+  opacity: 0;
+  background: conic-gradient(from 0turn,
+      transparent 0turn,
+      transparent 0.82turn,
+      rgba(13, 153, 255, 0.95) 0.875turn,
+      rgba(127, 200, 255, 0.98) 0.92turn,
+      rgba(13, 153, 255, 0.95) 0.965turn,
+      transparent 1turn);
+  transform: rotate(0turn);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.feature-card:hover .feature-card-ring,
+.feature-card:focus-within .feature-card-ring {
+  opacity: 1;
+  animation: arch-border-run 1.9s linear infinite;
+}
+
+.feature-card-inner {
+  border-radius: calc(1rem - 1px);
+  background-clip: padding-box;
+}
+
+@keyframes arch-border-run {
+  from {
+    transform: rotate(0turn);
+  }
+
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes flow-stage-progress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.flow-stage-progress {
+  animation: flow-stage-progress 5.5s linear forwards;
+}
+
+.flow-stage-card {
+  isolation: isolate;
+}
+
+.flow-stage-borderbox {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@property --flow-progress {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0turn;
+}
+
+@keyframes flow-stage-grow {
+  from {
+    --flow-progress: 0turn;
+  }
+
+  to {
+    --flow-progress: 1turn;
+  }
+}
+
+.flow-stage-grow {
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(from -90deg,
+      transparent 0turn,
+      rgba(71, 176, 255, 0.95) 0turn var(--flow-progress),
+      transparent var(--flow-progress),
+      transparent 1turn);
+  will-change: background;
+  animation: flow-stage-grow 5.5s linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .feature-card:hover .feature-card-ring,
+  .feature-card:focus-within .feature-card-ring {
+    animation: none;
+  }
+
+  .tw-line {
+    animation: none;
+    clip-path: none;
+  }
+
+  .tw-caret {
+    animation: none;
+    opacity: 1;
+  }
+
+  .announcement-shimmer {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.docs-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
