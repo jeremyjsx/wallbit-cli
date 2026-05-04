@@ -8,10 +8,10 @@ import (
 	"github.com/jeremyjsx/wallbit-cli/internal/services"
 	wallbitaccountdetails "github.com/jeremyjsx/wallbit-go/services/accountdetails"
 	wallbitassets "github.com/jeremyjsx/wallbit-go/services/assets"
+	wallbitrates "github.com/jeremyjsx/wallbit-go/services/rates"
 	wallbitroboadvisor "github.com/jeremyjsx/wallbit-go/services/roboadvisor"
 	wallbittrades "github.com/jeremyjsx/wallbit-go/services/trades"
 	wallbittransactions "github.com/jeremyjsx/wallbit-go/services/transactions"
-	wallbitrates "github.com/jeremyjsx/wallbit-go/services/rates"
 	wallbitwallets "github.com/jeremyjsx/wallbit-go/services/wallets"
 )
 
@@ -19,21 +19,21 @@ type StepHandler func(ctx context.Context, svc *services.Services, with map[stri
 type StepInputValidator func(with map[string]any) error
 
 var Registry = map[string]StepHandler{
-	"rates.get":               runRatesGet,
-	"balance.get_checking":    runBalanceGetChecking,
-	"balance.get_stocks":      runBalanceGetStocks,
-	"wallets.get":             runWalletsGet,
-	"assets.list":             runAssetsList,
-	"assets.get":              runAssetsGet,
-	"account_details.get":     runAccountDetailsGet,
-	"transactions.list":       runTransactionsList,
-	"cards.list":              runCardsList,
-	"cards.block":             runCardsBlock,
-	"cards.unblock":           runCardsUnblock,
-	"trades.create":           runTradesCreate,
-	"roboadvisor.deposit":     runRoboadvisorDeposit,
-	"roboadvisor.withdraw":    runRoboadvisorWithdraw,
-	"apikey.revoke":           runAPIKeyRevoke,
+	"rates.get":            runRatesGet,
+	"balance.get_checking": runBalanceGetChecking,
+	"balance.get_stocks":   runBalanceGetStocks,
+	"wallets.get":          runWalletsGet,
+	"assets.list":          runAssetsList,
+	"assets.get":           runAssetsGet,
+	"account_details.get":  runAccountDetailsGet,
+	"transactions.list":    runTransactionsList,
+	"cards.list":           runCardsList,
+	"cards.block":          runCardsBlock,
+	"cards.unblock":        runCardsUnblock,
+	"trades.create":        runTradesCreate,
+	"roboadvisor.deposit":  runRoboadvisorDeposit,
+	"roboadvisor.withdraw": runRoboadvisorWithdraw,
+	"apikey.revoke":        runAPIKeyRevoke,
 }
 
 var InputValidators = map[string]StepInputValidator{

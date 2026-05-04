@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -80,14 +79,19 @@ func runRoboadvisorBalance(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.RoboAdvisor.GetBalance(ctx)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.RoboAdvisor.GetBalance(ctx)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }
 
 func runRoboadvisorDeposit(cmd *cobra.Command, args []string) error {
@@ -115,14 +119,19 @@ func runRoboadvisorDeposit(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.RoboAdvisor.Deposit(ctx, req)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.RoboAdvisor.Deposit(ctx, req)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }
 
 func runRoboadvisorWithdraw(cmd *cobra.Command, args []string) error {
@@ -150,12 +159,17 @@ func runRoboadvisorWithdraw(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	out, err := svc.RoboAdvisor.Withdraw(ctx, req)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		res, err := svc.RoboAdvisor.Withdraw(ctx, req)
+		if err != nil {
+			return err
+		}
+		out = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	return writeJSON(out, cmd)
 }

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -58,11 +57,15 @@ func runWorkflowRun(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), app.Timeout())
 	defer cancel()
 
-	out := workflow.Run(ctx, spec, svc)
-
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	var out any
+	err = runWithLoading(cmd.ErrOrStderr(), func() error {
+		out = workflow.Run(ctx, spec, svc)
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+	return writeJSON(out, cmd)
 }
 
 func runWorkflowValidate(cmd *cobra.Command, args []string) error {
@@ -81,12 +84,10 @@ func runWorkflowValidate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	enc := json.NewEncoder(cmd.OutOrStdout())
-	enc.SetIndent("", "  ")
-	return enc.Encode(map[string]any{
+	return writeJSON(map[string]any{
 		"ok":      true,
 		"name":    spec.Name,
 		"steps":   len(spec.Steps),
 		"version": spec.Version,
-	})
+	}, cmd)
 }
