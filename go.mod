@@ -1,16 +1,16 @@
 module github.com/jeremyjsx/wallbit-cli
 
-go 1.25.2
+go 1.23
 
 require (
 	github.com/jeremyjsx/wallbit-go v0.1.0-beta.1
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/term v0.42.0
+	golang.org/x/term v0.28.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 )
