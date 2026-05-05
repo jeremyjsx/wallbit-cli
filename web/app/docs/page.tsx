@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { Fragment } from "react";
 import { WallbitMark } from "../../components/site/wallbit-mark";
+import { DocsCodeBlock } from "./docs-code-block";
 import { DocsSidebar } from "./docs-sidebar";
 
 const GITHUB = "https://github.com/jeremyjsx/wallbit-cli";
 
-function CodeBlock({ children }: { children: string }) {
+/** Inline monospace chip for flags, env vars, and field names (avoids heavy bold in prose). */
+function InlineCmd({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="my-4 overflow-x-auto rounded-xl border border-zinc-800 border-l-2 border-l-wallbit-500/55 bg-[var(--panel)] p-4 text-[13px] leading-relaxed text-zinc-300">
-      <code>{children}</code>
-    </pre>
+    <code className="whitespace-nowrap rounded-md border border-zinc-700/45 bg-zinc-950/55 px-1.5 py-0.5 font-mono text-[0.875em] font-normal leading-snug text-wallbit-200/95">
+      {children}
+    </code>
   );
 }
 
@@ -112,23 +114,24 @@ export default function DocsPage() {
             <ul className="list-disc space-y-1 pl-5 text-zinc-400">
               <li>Go toolchain (to install with <code className="text-wallbit-300/90">go install</code>)</li>
               <li>A Wallbit API key</li>
-              <li>Network access to your Wallbit API host (default in this build is the dev API base URL unless you override it)</li>
+              <li>Network access to your Wallbit API host (default base URL is production unless you override with <code className="text-wallbit-300/90">--base-url</code>)</li>
             </ul>
 
             <H2 id="installation">Installation</H2>
             <p className="text-zinc-400">
               Install the <code className="text-zinc-300">wallbit</code> binary from the repository module path:
             </p>
-            <CodeBlock>{`go install github.com/jeremyjsx/wallbit-cli/cmd/wallbit@latest`}</CodeBlock>
+            <DocsCodeBlock>{`go install github.com/jeremyjsx/wallbit-cli/cmd/wallbit@latest`}</DocsCodeBlock>
             <p className="text-zinc-400">
-              Ensure <code className="text-zinc-300">$(go env GOPATH)/bin</code> (or your chosen install location) is on your{" "}
-              <code className="text-zinc-300">PATH</code>.
+              Put the Go bin directory on your <InlineCmd>PATH</InlineCmd> so your shell can run <InlineCmd>wallbit</InlineCmd>.
+              With a default <InlineCmd>go install</InlineCmd>, that directory is usually{" "}
+              <InlineCmd>$(go env GOPATH)/bin</InlineCmd> (or wherever you install binaries).
             </p>
 
             <H2 id="authentication">Authentication</H2>
             <p className="text-zinc-400">
-              The CLI resolves an API key in this order: <strong className="text-zinc-300">--api-key</strong> flag, then{" "}
-              <strong className="text-zinc-300">WALLBIT_API_KEY</strong>, then the local credentials file written by{" "}
+              The CLI resolves an API key in this order: <InlineCmd>--api-key</InlineCmd> flag, then{" "}
+              <InlineCmd>WALLBIT_API_KEY</InlineCmd>, then the local credentials file written by{" "}
               <code className="text-zinc-300">wallbit auth login</code>.
             </p>
             <Table
@@ -160,7 +163,7 @@ export default function DocsPage() {
                 ],
                 [
                   <code key="2" className="text-wallbit-300/90">--base-url</code>,
-                  "Wallbit API base URL. Default matches the CLI build (currently the dev API URL unless you change the code).",
+                  "Wallbit API base URL (default https://api.wallbit.io).",
                 ],
                 [
                   <code key="3" className="text-wallbit-300/90">--timeout</code>,
@@ -193,7 +196,8 @@ export default function DocsPage() {
                 ["transactions", "Transaction feeds and filters", <code key="tx" className="text-wallbit-300/90">wallbit transactions list --limit 10</code>],
                 ["cards", "List, block, unblock card operations", <code key="car" className="text-wallbit-300/90">wallbit cards block &lt;card-uuid&gt;</code>],
                 ["roboadvisor", "Portfolio balance, deposit, withdraw", <code key="rob" className="text-wallbit-300/90">wallbit roboadvisor balance</code>],
-                ["fees / apikey", "Fee lookup and key revocation", <code key="fee" className="text-wallbit-300/90">wallbit fees get --type TRADE</code>],
+                ["fees", "Fee settings by type", <code key="fee" className="text-wallbit-300/90">wallbit fees get --type TRADE</code>],
+                ["apikey", "Revoke the active API key", <code key="apk" className="text-wallbit-300/90">wallbit apikey revoke</code>],
               ]}
             />
 
@@ -232,7 +236,7 @@ export default function DocsPage() {
             <p className="text-zinc-400">
               Your fastest path is: create a YAML file, validate it, then run it. Use this as a copy-paste baseline:
             </p>
-            <CodeBlock>{`version: 1
+            <DocsCodeBlock>{`version: 1
 name: quickstart-fx
 steps:
   - id: fx
@@ -244,9 +248,9 @@ steps:
     run: wallets.get
     with:
       currency: USDC
-      network: polygon`}</CodeBlock>
-            <CodeBlock>{`wallbit workflow validate ./quickstart.yaml
-wallbit workflow run ./quickstart.yaml`}</CodeBlock>
+      network: polygon`}</DocsCodeBlock>
+            <DocsCodeBlock>{`wallbit workflow validate ./quickstart.yaml
+wallbit workflow run ./quickstart.yaml`}</DocsCodeBlock>
 
             <H2 id="workflow-language">Workflow language</H2>
             <p className="text-zinc-400">
@@ -267,7 +271,7 @@ wallbit workflow run ./quickstart.yaml`}</CodeBlock>
 
             <H2 id="workflow-patterns">Patterns cookbook</H2>
             <H3>Pattern 1 - FX check plus reverse confirmation</H3>
-            <CodeBlock>{`version: 1
+            <DocsCodeBlock>{`version: 1
 name: fx-roundtrip
 steps:
   - id: base_fx
@@ -279,10 +283,10 @@ steps:
     run: rates.get
     with:
       source: \${steps.base_fx.data.Data.DestCurrency}
-      dest: \${steps.base_fx.data.Data.SourceCurrency}`}</CodeBlock>
+      dest: \${steps.base_fx.data.Data.SourceCurrency}`}</DocsCodeBlock>
 
             <H3>Pattern 2 - Portfolio context plus transaction scan</H3>
-            <CodeBlock>{`version: 1
+            <DocsCodeBlock>{`version: 1
 name: portfolio-scan
 steps:
   - id: wallets
@@ -295,10 +299,10 @@ steps:
     with:
       page: 1
       limit: 10
-      currency: USD`}</CodeBlock>
+      currency: USD`}</DocsCodeBlock>
 
             <H3>Pattern 3 - Multi-domain snapshot</H3>
-            <CodeBlock>{`version: 1
+            <DocsCodeBlock>{`version: 1
 name: morning-snapshot
 steps:
   - id: assets
@@ -308,24 +312,24 @@ steps:
       limit: 5
       category: TECHNOLOGY
   - id: cards
-    run: cards.list`}</CodeBlock>
+    run: cards.list`}</DocsCodeBlock>
 
             <H2 id="workflow-ai-prompts">AI prompt templates</H2>
             <p className="text-zinc-400">
               Give your copilot strict prompts so it emits runnable YAML instead of vague prose.
             </p>
-            <CodeBlock>{`Generate a wallbit-cli workflow YAML (version 1) with:
+            <DocsCodeBlock>{`Generate a wallbit-cli workflow YAML (version 1) with:
 - 3 steps
 - one rates.get step (USD -> EUR)
 - one wallets.get step (USDC on polygon)
 - one transactions.list step (limit 10)
-Return only valid YAML, no markdown, no explanations.`}</CodeBlock>
+Return only valid YAML, no markdown, no explanations.`}</DocsCodeBlock>
 
-            <CodeBlock>{`Refactor this workflow to use step references where possible.
+            <DocsCodeBlock>{`Refactor this workflow to use step references where possible.
 Keep run keys valid for wallbit-cli.
 Return only YAML.
 
-<paste-workflow-here>`}</CodeBlock>
+<paste-workflow-here>`}</DocsCodeBlock>
 
             <H2 id="workflow-spec">YAML workflow specification</H2>
             <p className="text-zinc-400">Top-level fields:</p>
@@ -378,7 +382,7 @@ Return only YAML.
                 ],
               ]}
             />
-            <CodeBlock>{`version: 1
+            <DocsCodeBlock>{`version: 1
 name: example
 on_error: fail_fast
 steps:
@@ -390,7 +394,7 @@ steps:
   - id: list_tx
     run: transactions.list
     with:
-      limit: 20`}</CodeBlock>
+      limit: 20`}</DocsCodeBlock>
 
             <H2 id="workflow-validate-run">Validate, Run & Output</H2>
             <p className="text-zinc-400">
@@ -441,7 +445,8 @@ steps:
 
             <H2 id="workflow-catalog">Workflow step catalog</H2>
             <p className="text-zinc-400 mb-2">
-              Each row is a <code className="text-zinc-300">run</code> key. Fields listed under <strong className="text-zinc-300">with</strong> use workflow YAML naming (snake_case).
+              Each row is a <code className="text-zinc-300">run</code> key. Fields listed under <InlineCmd>with</InlineCmd>{" "}
+              use workflow YAML naming (snake_case).
             </p>
             <Table
               headers={["run", "with", "Notes"]}
@@ -535,6 +540,29 @@ steps:
                     <code className="text-zinc-500">robo_advisor_id</code>, <code className="text-zinc-500">amount</code>, <code className="text-zinc-500">to</code> (DEFAULT or INVESTMENT)
                   </Fragment>,
                   "Mutation.",
+                ],
+                [
+                  <code key="fg" className="text-wallbit-300/90">fees.get</code>,
+                  <Fragment key="fg-with">
+                    optional <code className="text-zinc-500">type</code> (defaults to TRADE)
+                  </Fragment>,
+                  <Fragment key="fg-note">
+                    The fee type you pass in YAML is uppercased before it is sent to the Wallbit API.
+                  </Fragment>,
+                ],
+                [
+                  <code key="odi" className="text-wallbit-300/90">operations.deposit_investment</code>,
+                  <Fragment key="odi-with">
+                    <code className="text-zinc-500">currency</code>, <code className="text-zinc-500">amount</code> (positive)
+                  </Fragment>,
+                  "Moves funds into the investment account. Mutation.",
+                ],
+                [
+                  <code key="owi" className="text-wallbit-300/90">operations.withdraw_investment</code>,
+                  <Fragment key="owi-with">
+                    <code className="text-zinc-500">currency</code>, <code className="text-zinc-500">amount</code> (positive)
+                  </Fragment>,
+                  "Withdraws from the investment account. Mutation.",
                 ],
                 [
                   <code key="ar" className="text-wallbit-300/90">apikey.revoke</code>,
